@@ -15,6 +15,8 @@
 #include "net/net.h"
 
 
+void pipfunc(void);
+
 void swap_MAC(void);	//for testing on single machine
 
 int main(void) {
@@ -24,6 +26,9 @@ int main(void) {
 	char	outcom_buf[2048];
 	int		RLen;
 
+	//pipfunc();
+	//return EXIT_SUCCESS;
+
 	if (config_LoadFromFile()) {
 		if (net_init()) {
 			swap_MAC();
@@ -31,17 +36,13 @@ int main(void) {
 			do {
 				if (net_recv(incom_buf,&Len)) {
 					incom_buf[Len] = 0;
-					//printf("cmd>%s", incom_buf);
-					//system(incom_buf);
 
-					if ((fd = popen(incom_buf,"r")) != NULL) {
-						printf("cmd>%s\n", incom_buf);
+					if ((fd = popen(incom_buf, "r")) != NULL) {
 
-						while((RLen = fread(outcom_buf,MY_PROTO_MAX_DATA_LEN, 1, fd)) > 0) {
-							outcom_buf[RLen] = 0;
-							printf("%s",outcom_buf);
+						while (fgets(outcom_buf, 1024, fd) != NULL) {
+							printf("%d:%s",strlen(outcom_buf), outcom_buf);
+							//net_send(outcom_buf);
 						}
-						puts("out finished");
 
 						pclose(fd);
 					}
@@ -83,4 +84,17 @@ void swap_MAC(void) {	//for testing on single machine
 	iface_MAC_DST[3] = iface_MAC_TMP[3];
 	iface_MAC_DST[4] = iface_MAC_TMP[4];
 	iface_MAC_DST[5] = iface_MAC_TMP[5];
+}
+
+void pipfunc(void) {
+	FILE	*fd;
+	char	buf[1024];
+	char	*buf2[1024];
+
+	//system("ls\n\0");
+	fd = popen("ls", "r");
+	if (fd != NULL) {
+		while (fgets(buf, 1024, fd) != NULL) printf("%d:%s",strlen(buf), buf);
+		pclose(fd);
+	}
 }
