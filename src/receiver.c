@@ -41,7 +41,7 @@ int main(void) {
 
 						while (fgets(outcom_buf, 1024, fd) != NULL) {
 							printf("%d:%s",strlen(outcom_buf), outcom_buf);
-							//net_send(outcom_buf);
+							net_send(outcom_buf);
 						}
 
 						pclose(fd);
